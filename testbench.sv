@@ -1,21 +1,15 @@
-//-------------------------------------------------------------------------
-//				www.verificationguide.com   testbench.sv
-//-------------------------------------------------------------------------
-//---------------------------------------------------------------
-//including interfcae and testcase files
-`include "mem_interface.sv"
-`include "mem_base_test.sv"
-`include "mem_wr_rd_test.sv"
-//---------------------------------------------------------------
+`include "uvm_macros.svh"
+`include "mem_package.svh"
+`include "interface.svh"
 
-module tbench_top;
-
-  //---------------------------------------
-  //clock and reset signal declaration
-  //---------------------------------------
+module tb;
+  import uvm_pkg::*; 
+  import my_pkg::*;
+  
   bit clk;
   bit reset;
-  
+   
+
   //---------------------------------------
   //clock generation
   //---------------------------------------
@@ -29,40 +23,41 @@ module tbench_top;
     #5 reset =0;
   end
   
-  //---------------------------------------
-  //interface instance
-  //---------------------------------------
-  mem_if intf(clk,reset);
+   
   
-  //---------------------------------------
-  //DUT instance
-  //---------------------------------------
+  intf intf_inst(clk,reset);
+  
   memory DUT (
-    .clk(intf.clk),
-    .reset(intf.reset),
-    .addr(intf.addr),
-    .wr_en(intf.wr_en),
-    .rd_en(intf.rd_en),
-    .wdata(intf.wdata),
-    .rdata(intf.rdata)
+    .clk(intf_inst.clk),
+    .reset(intf_inst.reset),
+    .addr(intf_inst.addr),
+    .wr_en(intf_inst.wr_en),
+    .rd_en(intf_inst.rd_en),
+    .wdata(intf_inst.wdata),
+    .rdata(intf_inst.rdata)
    );
+
   
-  //---------------------------------------
-  //passing the interface handle to lower heirarchy using set method 
-  //and enabling the wave dump
-  //---------------------------------------
-  initial begin 
-    uvm_config_db#(virtual mem_if)::set(uvm_root::get(),"*","vif",intf);
-    //enable wave dump
-    $dumpfile("dump.vcd"); 
-    $dumpvars;
-  end
+ initial begin
+   run_test("test");
+ end
   
-  //---------------------------------------
-  //calling test
-  //---------------------------------------
-  initial begin 
-    run_test();
-  end
+  initial
+    begin
+      uvm_config_db#(virtual intf)::set(uvm_root::get(),"*","vif",intf_inst);
+    end
+
+ /* initial
+    begin
+      $dumpfile("dump.vcd");
+      $dumpvars;
+    end */
+     
+  initial
+    begin
+      #100;
+      $finish();
+    end
+    
   
 endmodule
